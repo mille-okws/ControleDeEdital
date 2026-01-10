@@ -1,0 +1,277 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
+  line-height: 1.4;
+}
+
+/* ---------------- NAV ---------------- */
+
+.main-nav {
+  border-bottom: 1px solid #222;
+  padding: 14px 16px;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-title {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.nav-toggle {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.3rem;
+  display: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.nav-links a.active,
+.nav-links a:hover {
+  color: #fff;
+}
+
+/* ---------------- HEADER ---------------- */
+
+header {
+  padding: 20px 16px;
+  border-bottom: 1px solid #222;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.cycle-summary {
+  margin-top: 12px;
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: #bbb;
+}
+
+/* ---------------- CONTAINER ---------------- */
+
+.container {
+  padding: 20px 16px 100px;
+  display: grid;
+  gap: 20px;
+}
+
+/* ---------------- PANELS ---------------- */
+
+.panel {
+  border: 1px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 16px;
+  background: #0a0a0a;
+}
+
+.panel h3 {
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+/* ---------------- CONFIG ---------------- */
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.config-item label {
+  display: block;
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+.config-item input {
+  width: 100%;
+  background: #000;
+  border: 1px solid #222;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* ---------------- WEEKDAYS ---------------- */
+
+.weekdays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.weekdays button {
+  background: #000;
+  border: 1px solid #222;
+  color: #aaa;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.weekdays button.active {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+/* ---------------- SUBJECTS ---------------- */
+
+.cycle-subjects {
+  display: grid;
+  gap: 10px;
+}
+
+.subject-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #1a1a1a;
+  border-radius: 10px;
+  background: #000;
+}
+
+.subject-name {
+  font-size: 0.85rem;
+}
+
+.percent-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.percent-controls button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #222;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.percent-controls span {
+  min-width: 38px;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.subject-hours {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+/* ---------------- WEEK PREVIEW ---------------- */
+
+.week-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 10px;
+}
+
+.day-column {
+  border: 1px solid #1a1a1a;
+  border-radius: 10px;
+  padding: 10px;
+  background: #000;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.day-column strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ---------------- ACTIONS ---------------- */
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.actions button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #222;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.actions button:hover {
+  border-color: #fff;
+}
+
+.actions .danger {
+  color: #f55;
+  border-color: #400;
+}
+
+/* ---------------- RESPONSIVE ---------------- */
+
+@media (max-width: 720px) {
+  .nav-links {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  .subject-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

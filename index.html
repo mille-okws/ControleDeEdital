@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle do Edital</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- MENU -->
+<nav class="main-nav">
+  <div class="nav-container">
+
+    <div class="nav-brand">
+      <span class="nav-title">Edital</span>
+    </div>
+
+    <button class="nav-toggle" aria-label="Abrir menu">
+      ☰
+    </button>
+
+    <ul class="nav-links">
+      <li><a href="index.html">Visão geral</a></li>
+      <li><a href="hoje.html">Hoje</a></li>
+      <li><a href="ciclo.html">Ciclo</a></li>
+      <li><a href="estatisticas.html">Estatísticas</a></li>
+      <li><a href="config.html">Configurações</a></li>
+    </ul>
+
+  </div>
+</nav>
+
+<header>
+  <div class="header-top">
+    <h1>Controle do Edital</h1>
+    <span class="subtitle">progresso geral</span>
+  </div>
+
+  <!-- Barra de progresso geral -->
+  <div class="global-progress">
+    <div class="global-progress-fill" id="global-progress-fill"></div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="grid">
+
+    <!-- I -->
+    <a class="card" data-materia="termodinamica" href="materias/termodinamica.html">
+      <span class="emoji-bg">🔥</span>
+      <h3>I. Termodinâmica</h3>
+      <small>Leis, ciclos, máquinas de fluxo</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- II -->
+    <a class="card" data-materia="mecanica-calor" href="materias/mecanica-calor.html">
+      <span class="emoji-bg">🌊</span>
+      <h3>II. Mecânica / Calor</h3>
+      <small>Fluidos e transferência de calor</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- III -->
+    <a class="card" data-materia="resistencia-dinamica" href="materias/resistencia-dinamica.html">
+      <span class="emoji-bg">🏗️</span>
+      <h3>III. Resistência / Dinâmica / Vibrações</h3>
+      <small>Tensões, mecanismos, vibrações</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- IV -->
+    <a class="card" data-materia="metalurgia-materiais" href="materias/metalurgia-materiais.html">
+      <span class="emoji-bg">🧱</span>
+      <h3>IV. Metalurgia / Materiais</h3>
+      <small>Estruturas, ensaios, corrosão</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- V -->
+    <a class="card" data-materia="fabricacao-instrumentacao" href="materias/fabricacao-instrumentacao.html">
+      <span class="emoji-bg">⚙️</span>
+      <h3>V. Fabricação / Instrumentação</h3>
+      <small>Soldagem, usinagem, controle</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- VI -->
+    <a class="card" data-materia="auxiliares" href="materias/auxiliares.html">
+      <span class="emoji-bg">🔌</span>
+      <h3>VI. Auxiliares</h3>
+      <small>Eletrotécnica e estatística</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- VII -->
+    <a class="card" data-materia="direito-penal" href="materias/direito-penal.html">
+      <span class="emoji-bg">⚖️</span>
+      <h3>VII. Direito Penal e Proc. Penal</h3>
+      <small>Crime, provas, perícia</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- VIII -->
+    <a class="card" data-materia="constitucional-administrativo" href="materias/constitucional-administrativo.html">
+      <span class="emoji-bg">🏛️</span>
+      <h3>VIII. Constitucional e Administrativo</h3>
+      <small>CF, atos, licitações</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- IX -->
+    <a class="card" data-materia="criminalistica" href="materias/criminalistica.html">
+      <span class="emoji-bg">🔍</span>
+      <h3>IX. Criminalística</h3>
+      <small>Locais, vestígios, balística</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+    <!-- X -->
+    <a class="card" data-materia="medicina-legal" href="materias/medicina-legal.html">
+      <span class="emoji-bg">🧬</span>
+      <h3>X. Medicina Legal</h3>
+      <small>Traumatologia, tanatologia</small>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">0%</span>
+    </a>
+
+  </section>
+</main>
+
+<script src="js.js"></script>
+</body>
+</html>
