@@ -1,0 +1,102 @@
+/* Configurações Globais e Variáveis */
+:root {
+    --bg-color: #000000;
+    --panel-bg: #0a0a0a;
+    --text-main: #ffffff;
+    --text-dim: #888888;
+    --glow-color: rgba(255, 255, 255, 0.4);
+    --border-color: #333333;
+    --accent: #ffffff;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Navegação Minimalista */
+.main-nav {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+}
+
+.nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.nav-links a.active, .nav-links a:hover {
+    color: var(--text-main);
+    text-shadow: 0 0 10px var(--glow-color);
+}
+
+/* Painéis com Glow */
+.panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.panel:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--glow-color);
+    transform: translateY(-5px);
+}
+
+/* Tipografia e Números */
+h1, h3 {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 300;
+}
+
+.big-number {
+    font-size: 3rem;
+    font-weight: 200;
+    color: var(--text-main);
+    text-shadow: 0 0 15px var(--glow-color);
+    margin-top: 10px;
+}
+
+.stat-label {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+}
+
+/* Layout de Grid */
+.stats-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.card-full {
+    grid-column: 1 / -1;
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Customização para o Chart.js (via CSS para o container) */
+canvas {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+}
+
+/* Responsividade */
+@media (max-width: 800px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+}
