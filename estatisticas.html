@@ -5,15 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Estatísticas Avançadas</title>
   <link rel="stylesheet" href="ciclo.css">
+  <link rel="stylesheet" href="estatisticas.css">
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-    .card-full { grid-column: 1 / -1; }
-    .chart-box { min-height: 300px; position: relative; }
-    .big-number { font-size: 2.5rem; font-weight: bold; color: var(--primary); display: block; }
-    .stat-label { color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; }
-    @media (max-width: 800px) { .stats-container { grid-template-columns: 1fr; } }
-  </style>
 </head>
 <body>
 
@@ -48,7 +42,7 @@
 
     <section class="panel">
       <h3>Equilíbrio Semanal (Radar)</h3>
-      <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">Quanto mais regular o gráfico, mais equilibrado está seu estudo.</p>
+      <p class="chart-description">Quanto mais regular o gráfico, mais equilibrado está seu estudo.</p>
       <div class="chart-box">
         <canvas id="chart-radar"></canvas>
       </div>
