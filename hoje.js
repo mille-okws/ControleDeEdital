@@ -1,253 +1,244 @@
-// hoje.js — CONTROLE DIÁRIO COM TIMER REAL (BACKGROUND SAFE)
-
 document.addEventListener("DOMContentLoaded", () => {
-  /* ================== CHAVES ================== */
-  const CONFIG_KEY = "cycle-config";
-  const DIST_KEY = "cycle-distribution";
-  const PROGRESS_KEY = "daily-progress";
-  const ACTIVE_TIMER_KEY = "active-timer";
+    /* ================== CHAVES STORAGE ================== */
+    const CONFIG_KEY = "cycle-config";
+    const DIST_KEY = "cycle-distribution";
+    const PROGRESS_KEY = "daily-progress";
+    const ACTIVE_TIMER_KEY = "active-timer";
+    const LAST_DATE_KEY = "last-access-date";
+    const HISTORY_KEY = "study-history"; // Para o estatisticas.js
 
-  const DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-  const todayIndex = new Date().getDay();
+    /* ================== ELEMENTOS DO DOM ================== */
+    const dailyTargetEl = document.getElementById("daily-target");
+    const dailyDoneEl = document.getElementById("daily-done");
+    const dailyRemainingEl = document.getElementById("daily-remaining");
+    const progressBarEl = document.getElementById("daily-progress-bar");
+    const dateDisplayEl = document.getElementById("current-date-display");
+    const subjectsListEl = document.getElementById("today-subjects-list");
+    const activeSubjectTitleEl = document.getElementById("active-subject-title");
+    const mainTimerEl = document.getElementById("main-timer");
 
-  /* ================== DOM ================== */
-  const dailyTargetEl = document.getElementById("daily-target");
-  const dailyDoneEl = document.getElementById("daily-done");
-  const dailyRemainingEl = document.getElementById("daily-remaining");
-  const progressBarEl = document.getElementById("daily-progress-bar");
-  const dateDisplayEl = document.getElementById("current-date-display");
+    const btnStart = document.getElementById("btn-start");
+    const btnPause = document.getElementById("btn-pause");
+    const btnStop = document.getElementById("btn-stop");
+    const btnClear = document.getElementById("btn-clear-logs");
+    const logListEl = document.getElementById("session-log-list");
 
-  const subjectsListEl = document.getElementById("today-subjects-list");
-  const activeSubjectTitleEl = document.getElementById("active-subject-title");
-  const mainTimerEl = document.getElementById("main-timer");
+    /* ================== ESTADO INICIAL ================== */
+    let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || { dailyHours: 0, activeDays: [] };
+    let distribution = JSON.parse(localStorage.getItem(DIST_KEY)) || {};
+    let dailyProgress = JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {};
 
-  const btnStart = document.getElementById("btn-start");
-  const btnPause = document.getElementById("btn-pause");
-  const btnStop = document.getElementById("btn-stop");
-  const btnClear = document.getElementById("btn-clear-logs");
-  const logListEl = document.getElementById("session-log-list");
+    let activeSubjectId = null;
+    let timerInterval = null;
+    let timerState = { running: false, startTime: null, accumulated: 0 };
 
-  /* ================== ESTADO ================== */
-  let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || { dailyHours: 0, activeDays: [] };
-  let distribution = JSON.parse(localStorage.getItem(DIST_KEY)) || {};
-  let dailyProgress = JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {};
+    /* ================== INICIALIZAÇÃO / RESET DIÁRIO ================== */
+    function init() {
+        const now = new Date();
+        const todayStr = now.toLocaleDateString("pt-BR");
+        const lastDate = localStorage.getItem(LAST_DATE_KEY);
 
-  let activeSubjectId = null;
-  let timerInterval = null;
+        // LÓGICA DE RESET E HISTÓRICO: Se mudou o dia
+        if (lastDate && lastDate !== todayStr) {
+            const lastDayProgress = JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {};
+            
+            // Se houve estudo ontem, salva no histórico antes de resetar
+            if (Object.keys(lastDayProgress).length > 0) {
+                let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+                history.push({
+                    date: lastDate,
+                    data: lastDayProgress,
+                    totalMinutes: Object.values(lastDayProgress).reduce((a, b) => a + Math.floor(b / 60), 0)
+                });
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            }
 
-  let timerState = {
-    running: false,
-    startTime: null,
-    accumulated: 0
-  };
+            // Limpa dados para o novo dia
+            localStorage.removeItem(PROGRESS_KEY);
+            localStorage.removeItem(ACTIVE_TIMER_KEY);
+            dailyProgress = {};
+        }
+        localStorage.setItem(LAST_DATE_KEY, todayStr);
 
-  /* ================== INIT ================== */
-  function init() {
-    const dateStr = new Date().toLocaleDateString("pt-BR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
+        // Exibição da Data
+        dateDisplayEl.textContent = now.toLocaleDateString("pt-BR", {
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
+        }).toUpperCase();
+
+        if (Object.keys(distribution).length === 0) {
+            subjectsListEl.innerHTML = "<p class='empty-log'>NENHUMA MATÉRIA CONFIGURADA NO CICLO.</p>";
+            return;
+        }
+
+        restoreActiveTimer();
+        renderTodaySubjects();
+        updateGlobalStats();
+        updateTimerDisplay();
+    }
+
+    /* ================== LÓGICA DO TEMPO ================== */
+    function getElapsedSeconds() {
+        if (!timerState.running || !timerState.startTime) return timerState.accumulated;
+        return timerState.accumulated + Math.floor((Date.now() - timerState.startTime) / 1000);
+    }
+
+    function updateTimerDisplay() {
+        const total = getElapsedSeconds();
+        const h = Math.floor(total / 3600).toString().padStart(2, "0");
+        const m = Math.floor((total % 3600) / 60).toString().padStart(2, "0");
+        const s = (total % 60).toString().padStart(2, "0");
+        mainTimerEl.textContent = `${h}:${m}:${s}`;
+    }
+
+    /* ================== ATUALIZAÇÃO DE STATS & BARRAS ================== */
+    function updateGlobalStats() {
+        const targetSeconds = config.dailyHours * 3600;
+        const doneSeconds = Object.values(dailyProgress).reduce((a, b) => a + b, 0);
+
+        const h = Math.floor(doneSeconds / 3600);
+        const m = Math.floor((doneSeconds % 3600) / 60);
+
+        if (dailyTargetEl) dailyTargetEl.textContent = `${config.dailyHours}H`;
+        if (dailyDoneEl) dailyDoneEl.textContent = `${h}H ${m}M`;
+
+        const percent = targetSeconds > 0 ? Math.min(100, (doneSeconds / targetSeconds) * 100) : 0;
+        if (progressBarEl) progressBarEl.style.width = `${percent}%`;
+    }
+
+    /* ================== RENDERIZAÇÃO DAS MATÉRIAS ================== */
+    function renderTodaySubjects() {
+        subjectsListEl.innerHTML = "";
+        Object.keys(distribution).forEach(id => {
+            const weight = distribution[id];
+            const targetMins = (config.dailyHours * 60) * (weight / 100);
+            const doneMins = Math.floor((dailyProgress[id] || 0) / 60);
+            const progress = targetMins > 0 ? Math.min(100, (doneMins / targetMins) * 100) : 0;
+
+            const card = document.createElement("div");
+            card.className = `subject-card ${activeSubjectId === id ? "active" : ""}`;
+            card.innerHTML = `
+                <div class="subject-info">
+                    <strong>${id.replace(/-/g, ' ').toUpperCase()}</strong>
+                    <div class="progress-mini">
+                        <div class="progress-mini-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <small>${doneMins}M DE ${Math.round(targetMins)}M (${Math.round(progress)}%)</small>
+                </div>
+                <button class="btn-focus">${activeSubjectId === id ? 'FOCADO' : 'FOCAR'}</button>
+            `;
+            card.querySelector("button").onclick = () => selectSubject(id);
+            subjectsListEl.appendChild(card);
+        });
+    }
+
+    function selectSubject(id) {
+        if (timerState.running) {
+            if (!confirm("ISSO PARARÁ O TIMER ATUAL. CONTINUAR?")) return;
+            stopTimer();
+        }
+        activeSubjectId = id;
+        activeSubjectTitleEl.textContent = `FOCO: ${id.replace(/-/g, ' ').toUpperCase()}`;
+        timerState = { running: false, startTime: null, accumulated: 0 };
+        updateTimerDisplay();
+        renderTodaySubjects();
+        
+        btnStart.style.display = "inline-block";
+        btnPause.style.display = "none";
+        btnStop.style.display = "none";
+    }
+
+    /* ================== CONTROLES ================== */
+    btnStart.onclick = () => {
+        if (!activeSubjectId) return;
+        timerState.running = true;
+        timerState.startTime = Date.now();
+        btnStart.style.display = "none";
+        btnPause.style.display = "inline-block";
+        btnStop.style.display = "inline-block";
+        if (!timerInterval) timerInterval = setInterval(updateTimerDisplay, 1000);
+    };
+
+    btnPause.onclick = () => {
+        timerState.accumulated = getElapsedSeconds();
+        timerState.running = false;
+        timerState.startTime = null;
+        btnStart.style.display = "inline-block";
+        btnPause.style.display = "none";
+    };
+
+    btnStop.onclick = stopTimer;
+
+    function stopTimer() {
+        const finalElapsed = getElapsedSeconds();
+        clearInterval(timerInterval);
+        timerInterval = null;
+
+        if (activeSubjectId && finalElapsed > 0) {
+            dailyProgress[activeSubjectId] = (dailyProgress[activeSubjectId] || 0) + finalElapsed;
+            localStorage.setItem(PROGRESS_KEY, JSON.stringify(dailyProgress));
+            addLog(activeSubjectId, finalElapsed);
+        }
+
+        localStorage.removeItem(ACTIVE_TIMER_KEY);
+        timerState = { running: false, startTime: null, accumulated: 0 };
+        activeSubjectId = null;
+        activeSubjectTitleEl.textContent = "SELECIONE UMA MATÉRIA";
+        
+        updateTimerDisplay();
+        updateGlobalStats();
+        renderTodaySubjects();
+        
+        btnStart.style.display = "inline-block";
+        btnPause.style.display = "none";
+        btnStop.style.display = "none";
+    }
+
+    function addLog(id, secs) {
+        const empty = logListEl.querySelector(".empty-log");
+        if (empty) empty.remove();
+        const div = document.createElement("div");
+        div.className = "log-item";
+        div.innerHTML = `<span>${id.replace(/-/g, ' ').toUpperCase()}</span><strong>+${Math.floor(secs / 60)}M</strong>`;
+        logListEl.prepend(div);
+    }
+
+    btnClear.onclick = () => {
+        if (confirm("LIMPAR TODO O PROGRESSO DE HOJE?")) {
+            localStorage.removeItem(PROGRESS_KEY);
+            localStorage.removeItem(ACTIVE_TIMER_KEY);
+            location.reload();
+        }
+    };
+
+    /* ================== PERSISTÊNCIA DE SESSÃO ================== */
+    function restoreActiveTimer() {
+        const saved = JSON.parse(localStorage.getItem(ACTIVE_TIMER_KEY));
+        if (saved) {
+            activeSubjectId = saved.id;
+            timerState.accumulated = saved.accumulated;
+            timerState.startTime = saved.startTime;
+            timerState.running = saved.running;
+            
+            if (timerState.running) {
+                btnStart.style.display = "none";
+                btnPause.style.display = "inline-block";
+                btnStop.style.display = "inline-block";
+                timerInterval = setInterval(updateTimerDisplay, 1000);
+            }
+            activeSubjectTitleEl.textContent = `FOCO: ${activeSubjectId.replace(/-/g, ' ').toUpperCase()}`;
+        }
+    }
+
+    window.addEventListener("beforeunload", () => {
+        if (activeSubjectId) {
+            localStorage.setItem(ACTIVE_TIMER_KEY, JSON.stringify({
+                id: activeSubjectId,
+                accumulated: getElapsedSeconds(),
+                startTime: timerState.running ? timerState.startTime : null,
+                running: timerState.running
+            }));
+        }
     });
-    dateDisplayEl.textContent = dateStr;
 
-    if (!config.activeDays.includes(todayIndex)) {
-      subjectsListEl.innerHTML = "<p>Hoje é dia de descanso.</p>";
-      return;
-    }
-
-    restoreActiveTimer();
-    renderTodaySubjects();
-    updateGlobalStats();
-    updateTimerDisplay();
-  }
-
-  /* ================== TEMPO REAL ================== */
-  function getElapsedSeconds() {
-    if (!timerState.running || !timerState.startTime) {
-      return timerState.accumulated;
-    }
-    const now = Date.now();
-    return timerState.accumulated + Math.floor((now - timerState.startTime) / 1000);
-  }
-
-  function updateTimerDisplay() {
-    const total = getElapsedSeconds();
-    const h = Math.floor(total / 3600).toString().padStart(2, "0");
-    const m = Math.floor((total % 3600) / 60).toString().padStart(2, "0");
-    const s = (total % 60).toString().padStart(2, "0");
-    mainTimerEl.textContent = `${h}:${m}:${s}`;
-  }
-
-  /* ================== STATS ================== */
-  function updateGlobalStats() {
-    const targetSeconds = config.dailyHours * 3600;
-    const doneSeconds = Object.values(dailyProgress).reduce((a, b) => a + b, 0);
-
-    const h = Math.floor(doneSeconds / 3600);
-    const m = Math.floor((doneSeconds % 3600) / 60);
-
-    dailyTargetEl.textContent = `${config.dailyHours}h`;
-    dailyDoneEl.textContent = `${h}h ${m}m`;
-
-    const remaining = Math.max(0, config.dailyHours - doneSeconds / 3600);
-    dailyRemainingEl.textContent = `${remaining.toFixed(1)}h`;
-
-    const percent = targetSeconds > 0 ? Math.min(100, (doneSeconds / targetSeconds) * 100) : 0;
-    progressBarEl.style.width = `${percent}%`;
-  }
-
-  /* ================== MATÉRIAS ================== */
-  function renderTodaySubjects() {
-    subjectsListEl.innerHTML = "";
-
-    Object.keys(distribution).forEach(id => {
-      const percent = distribution[id];
-      const target = config.dailyHours * 3600 * (percent / 100);
-      const done = dailyProgress[id] || 0;
-      const progress = target > 0 ? Math.min(100, (done / target) * 100) : 0;
-
-      const name = id.replace(/-/g, " ").toUpperCase();
-
-      const card = document.createElement("div");
-      card.className = `subject-card ${activeSubjectId === id ? "active" : ""} ${progress >= 100 ? "completed" : ""}`;
-
-      card.innerHTML = `
-        <div class="subject-info">
-          <strong>${name}</strong>
-          <div class="progress-mini">
-            <div class="progress-mini-fill" style="width:${progress}%"></div>
-          </div>
-          <small>${Math.floor(done / 60)}m de ${Math.round(target / 60)}m</small>
-        </div>
-        <button class="btn-focus">Focar</button>
-      `;
-
-      card.querySelector(".btn-focus").onclick = () => selectSubject(id, name);
-      subjectsListEl.appendChild(card);
-    });
-  }
-
-  /* ================== SELEÇÃO ================== */
-  function selectSubject(id, name) {
-    if (timerState.running) stopTimer();
-
-    activeSubjectId = id;
-    activeSubjectTitleEl.textContent = `A estudar: ${name}`;
-
-    timerState = { running: false, startTime: null, accumulated: 0 };
-    updateTimerDisplay();
-    renderTodaySubjects();
-
-    btnStart.style.display = "inline-block";
-    btnPause.style.display = "none";
-    btnStop.style.display = "none";
-  }
-
-  /* ================== CONTROLES ================== */
-  btnStart.onclick = () => {
-    if (!activeSubjectId) return alert("Seleciona uma matéria");
-
-    timerState.running = true;
-    timerState.startTime = Date.now();
-
-    btnStart.style.display = "none";
-    btnPause.style.display = "inline-block";
-    btnStop.style.display = "inline-block";
-
-    if (!timerInterval) {
-      timerInterval = setInterval(updateTimerDisplay, 1000);
-    }
-  };
-
-  btnPause.onclick = () => {
-    if (!timerState.running) return;
-
-    timerState.accumulated = getElapsedSeconds();
-    timerState.running = false;
-    timerState.startTime = null;
-
-    btnStart.style.display = "inline-block";
-    btnPause.style.display = "none";
-  };
-
-  btnStop.onclick = stopTimer;
-
-  function stopTimer() {
-    if (timerState.running) {
-      timerState.accumulated = getElapsedSeconds();
-    }
-
-    clearInterval(timerInterval);
-    timerInterval = null;
-
-    if (activeSubjectId && timerState.accumulated > 0) {
-      dailyProgress[activeSubjectId] =
-        (dailyProgress[activeSubjectId] || 0) + timerState.accumulated;
-
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(dailyProgress));
-      addLog(activeSubjectId, timerState.accumulated);
-    }
-
-    localStorage.removeItem(ACTIVE_TIMER_KEY);
-
-    timerState = { running: false, startTime: null, accumulated: 0 };
-    updateTimerDisplay();
-    updateGlobalStats();
-    renderTodaySubjects();
-
-    btnStart.style.display = "inline-block";
-    btnPause.style.display = "none";
-    btnStop.style.display = "none";
-  }
-
-  /* ================== LOG ================== */
-  function addLog(id, seconds) {
-    if (seconds < 30) return;
-
-    const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const item = document.createElement("div");
-    item.className = "log-item";
-    item.innerHTML = `
-      <span>${id.replace(/-/g, " ")}</span>
-      <strong>+${Math.floor(seconds / 60)} min <small>${now}</small></strong>
-    `;
-    logListEl.prepend(item);
-  }
-
-  btnClear.onclick = () => {
-    if (!confirm("Apagar todo o progresso de hoje?")) return;
-    dailyProgress = {};
-    localStorage.removeItem(PROGRESS_KEY);
-    location.reload();
-  };
-
-  /* ================== PERSISTÊNCIA ================== */
-  function restoreActiveTimer() {
-    const saved = JSON.parse(localStorage.getItem(ACTIVE_TIMER_KEY));
-    if (!saved) return;
-
-    activeSubjectId = saved.subject;
-    timerState.running = true;
-    timerState.startTime = saved.startTime;
-    timerState.accumulated = saved.accumulated || 0;
-
-    btnStart.style.display = "none";
-    btnPause.style.display = "inline-block";
-    btnStop.style.display = "inline-block";
-
-    timerInterval = setInterval(updateTimerDisplay, 1000);
-  }
-
-  window.addEventListener("beforeunload", () => {
-    if (timerState.running) {
-      localStorage.setItem(ACTIVE_TIMER_KEY, JSON.stringify({
-        subject: activeSubjectId,
-        startTime: timerState.startTime,
-        accumulated: timerState.accumulated
-      }));
-    }
-  });
-
-  init();
+    init();
 });
