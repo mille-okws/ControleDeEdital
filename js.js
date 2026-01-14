@@ -37,4 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (globalFill) {
     globalFill.style.width = `${geral}%`;
   }
+  const globalText = document.querySelector(".header-top .subtitle");
+  if (globalText) {
+    globalText.textContent = `progresso geral: ${geral}%`;
+  }
 });
