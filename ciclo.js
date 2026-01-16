@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================== CONSTANTES / DADOS ================== */
   const SUBJECTS = [
     { id: "termodinamica", name: "Termodinâmica" },
-    { id: "mecanica-calor", name: "Mecânica / Calor" },
+    { id: "fluidomecanica", name: "Fluidomecânica" },
     { id: "resistencia-dinamica", name: "Resistência / Dinâmica" },
     { id: "metalurgia-materiais", name: "Metalurgia / Materiais" },
     { id: "fabricacao-instrumentacao", name: "Fabricação / Instrumentação" },
@@ -207,4 +207,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ================== INIT ================== */
   updateUI();
+
 });
